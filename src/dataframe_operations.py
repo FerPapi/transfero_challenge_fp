@@ -38,6 +38,7 @@ def create_ohlcv_df(df_trades, freq='1Min'):
 
     return df_ohlcv
 
+
 def asof_join(df_left, df_right, on='datastamp', direction='forward',allow_exact_matches=False):
     """
         Creates a table based on the merge_asof() method from pandas
@@ -57,10 +58,15 @@ def create_moving_average_feature(df, moving_average_name_col, data_col, window_
 
 def open_close_binary_classification(df, col_name):
     """
-        
+        Creates a target column for row t based on open and close values at t+1
+        Columns close_t1 and open_t1 are the open and close values at t+1 and
+        are kept for simplicity, used in the SHAP feature importance algorithm 
     """
     rows = df.shape[0]
-    for i in range(rows):
-        df.loc[i, col_name] = 1 if df['close'][i] >= df['open'][i] else 0
+    # for i in range(rows-1):
+    for i in range(rows-1):
+        df.loc[i, 'open_t1'] = df['open'][i+1]
+        df.loc[i, 'close_t1'] = df['close'][i+1]
+        df.loc[i, 'target'] = 1 if df['close'][i+1] >= df['open'][i+1] else 0
 
     return df
